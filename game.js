@@ -24,6 +24,9 @@ let gameGrid = [];   /*
 																coordinates or using bigger grid and showing some portion/view of grid)
 					*/
 let gamePaused = true;
+let isMouseDown = false;
+let didDrag = false;
+let mouseButton = 0;
 
 
 window.addEventListener('keyup', (evt) => {
@@ -135,8 +138,72 @@ function addCellEventListeners() {
 
 		for (let j = 0; j < CONFIG.COLS; j++) {
 			const cell = cells[j];
-			cell.addEventListener('click', toogleCellStateOnClick);
+			cell.addEventListener('mousedown', (evt) => {
+				if (!gamePaused) return;
+				isMouseDown = true;
+				didDrag = false;
+				mouseButton = evt.button;
+				if (mouseButton === 2) evt.preventDefault();
+			});
+			cell.addEventListener('mouseover', (evt) => {
+				if (!gamePaused) return;
+				if (isMouseDown) {
+					if (mouseButton === 0) {
+						setCellAlive(evt.target);
+					} else if (mouseButton === 2) {
+						setCellDead(evt.target);
+					}
+					didDrag = true;
+				}
+			});
+			cell.addEventListener('click', (evt) => {
+				if (!gamePaused) return;
+				if (didDrag) return;
+				toogleCellStateOnClick(evt);
+			});
+			cell.addEventListener('contextmenu', (evt) => {
+				if (!gamePaused) return;
+				evt.preventDefault();
+			});
 		}
+	}
+
+	document.addEventListener('mouseup', () => {
+		isMouseDown = false;
+	});
+	window.addEventListener('mouseup', () => {
+		isMouseDown = false;
+	});
+	window.addEventListener('pointerup', () => {
+		isMouseDown = false;
+	});
+	window.addEventListener('mouseleave', () => {
+		isMouseDown = false;
+	});
+
+	const board = document.querySelector(CONFIG.BOARD_SELECTOR);
+	board.addEventListener('mouseleave', () => {
+		isMouseDown = false;
+	});
+}
+
+function setCellAlive(cell) {
+	const i = Number(cell.dataset.row);
+	const j = Number(cell.dataset.col);
+	if (!gameGrid[i][j]) {
+		cell.classList.remove(CONFIG.CELL_CLASS.DEAD);
+		cell.classList.add(CONFIG.CELL_CLASS.LIVING);
+		gameGrid[i][j] = true;
+	}
+}
+
+function setCellDead(cell) {
+	const i = Number(cell.dataset.row);
+	const j = Number(cell.dataset.col);
+	if (gameGrid[i][j]) {
+		cell.classList.remove(CONFIG.CELL_CLASS.LIVING);
+		cell.classList.add(CONFIG.CELL_CLASS.DEAD);
+		gameGrid[i][j] = false;
 	}
 }
 

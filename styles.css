@@ -66,5 +66,5 @@ html, body {
 	font-size: 3.4rem;
 	font-weight: 900;
 	font-style: italic;
-	
+	pointer-events: none;
 }
